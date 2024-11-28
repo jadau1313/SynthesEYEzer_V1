@@ -50,15 +50,26 @@ const int EOGpin = A1; //anaolog pin for EOG
 #endif
 
 // Stepped Pentatonic mapping
-//
+// 
+/*
 uint16_t pentatonicTable[54] = {
   0,19,22,26,29,32,38,43,51,58,65,77,86,103,115,129,154,173,206,231,259,308,346,
   411,461,518,616,691,822,923,1036,1232,1383,1644,1845,2071,2463,2765,3288,
   3691,4143,4927,5530,6577,7382,8286,9854,11060,13153,14764,16572,19708,22121,26306
+};*/
+
+//3x octave
+uint16_t pentatonicTable[54] = {
+  0, 57, 66, 78, 87, 96, 114, 129, 153, 174, 195, 231, 258, 309, 345, 387, 462, 519, 615, 693, 
+  777, 924, 1038, 1232, 1384, 1554, 1848, 2071, 2485, 2765, 3288, 3691, 4143, 4927, 5530, 6577, 
+  7382, 8286, 9854, 11060, 13153, 14764, 16572, 19708, 22121, 26306, 31612, 36918
 };
 
 uint16_t mapPentatonic(uint16_t input) {
-  uint8_t value = (1023-input) / (1024/53);
+  uint8_t value = (1023-input) / (1024/26);
+  //uint8_t value = (1023-input) / (1024/53);
+  //uint8_t value = log(1023 - input + 1) / log(1023); // Using log for sensitivity tuning
+  //uint8_t value = sqrt(1023 - input);  // Adjust with sqrt or pow for non-linear sensitivity
   return (pentatonicTable[value]);
 }
 
@@ -87,17 +98,35 @@ void setup() {
   pinMode(EOGpin, INPUT);
   pinMode(PWM_PIN, OUTPUT);
 
+  audioOn();
+
 }
 
 void loop() {
+  int EOG_Reading = analogRead(EOGpin);
   audioEnabled = (digitalRead(buttonPin) == LOW); // Assuming LOW when button pressed
   // put your main code here, to run repeatedly:
   if(audioEnabled){
-    syncPhaseInc = mapPentatonic(analogRead(EOG_SYNC_CONTROL));
+    //Serial.println("Button pressed: Audio ON");
+    Serial.println(EOG_Reading);
+    uint16_t rawValue = analogRead(EOGpin);//
+
+    syncPhaseInc = mapPentatonic(rawValue);
+    Serial.print("Raw: ");
+    Serial.print(rawValue);
+    Serial.print(" -> Mapped: ");
+    Serial.println(syncPhaseInc);
+  }else{
+    syncPhaseInc = 0;
+    //Serial.println("Button released: Audio OFF");
+
   }
+  delay(10);
+
+
 }
 
-SIGNAL(PWM_INTERRUPT){
+SIGNAL(TIMER2_OVF_vect){
   if(audioEnabled){
     uint8_t value;
     uint16_t output;
