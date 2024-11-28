@@ -91,25 +91,22 @@ void audioOn() {
 }
 
 
-void setup() {
-  // put your setup code here, to run once:
+void setup() {  
   pinMode(buttonPin, INPUT_PULLUP);
   Serial.begin(115200);
   pinMode(EOGpin, INPUT);
   pinMode(PWM_PIN, OUTPUT);
-
   audioOn();
-
 }
 
 void loop() {
   int EOG_Reading = analogRead(EOGpin);
   audioEnabled = (digitalRead(buttonPin) == LOW); // Assuming LOW when button pressed
-  // put your main code here, to run repeatedly:
+  
   if(audioEnabled){
     //Serial.println("Button pressed: Audio ON");
     Serial.println(EOG_Reading);
-    uint16_t rawValue = analogRead(EOGpin);//
+    uint16_t rawValue = analogRead(EOGpin);
 
     syncPhaseInc = mapPentatonic(rawValue);
     Serial.print("Raw: ");
@@ -121,7 +118,7 @@ void loop() {
     //Serial.println("Button released: Audio OFF");
 
   }
-  delay(10);
+  delay(10); //can be adjusted for different purposes; longer delay means holding individual notes for a longer period of time
 
 
 }
